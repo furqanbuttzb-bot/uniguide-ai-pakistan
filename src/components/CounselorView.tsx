@@ -106,7 +106,7 @@ Student Profile Context:
 - Max Annual Budget: ${annualBudget} PKR`;
 
       const response = await ai.models.generateContent({
-        model: 'gemini-flash',
+        model: 'gemini-flash-2.0-flash',
         contents: promptText,
         config: {
           systemInstruction,
