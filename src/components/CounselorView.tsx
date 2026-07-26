@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChatMessage, StudentProfile } from '../types';
+import { GoogleGenAI } from '@google/genai';
 
 interface CounselorViewProps {
   setActiveTab: (tab: 'home' | 'search' | 'predictor' | 'counselor' | 'about') => void;
@@ -86,33 +87,38 @@ export const CounselorView: React.FC<CounselorViewProps> = ({ setActiveTab }) =>
     if (!textToSend) setInput('');
     setLoading(true);
 
-    const studentProfile: StudentProfile = {
-      matricPercentage: matric,
-      interPercentage: inter,
-      entryTestScore: entryTest,
-      desiredProgram,
-      preferredCity,
-      preferredProvince,
-      annualBudget,
-    };
-
     try {
-      const response = await fetch('/api/counselor', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: promptText,
-          history: messages,
-          studentProfile,
-        }),
+      // Retrieve the API key injected by Vite
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY || (process.env as any).GEMINI_API_KEY || '';
+      
+      if (!apiKey) {
+        throw new Error('Gemini API key is not configured.');
+      }
+
+      const ai = new GoogleGenAI({ apiKey });
+      
+      const systemInstruction = `You are UniGuide AI, an expert Pakistani Higher Education & University Admission Counselor.
+Provide helpful, polite, and detailed guidance to Pakistani students.
+Student Profile Context:
+- Target Degree: ${desiredProgram}
+- Preferred City: ${preferredCity} (${preferredProvince})
+- Marks: Matric ${matric}%, Intermediate ${inter}%, Entry Test ${entryTest}%
+- Max Annual Budget: ${annualBudget} PKR`;
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: promptText,
+        config: {
+          systemInstruction,
+        },
       });
 
-      const data = await response.json();
+      const aiReplyText = response.text || "I'm ready to answer any questions about Pakistani university admissions, aggregate cutoffs, or test dates.";
 
       const aiReply: ChatMessage = {
         id: (Date.now() + 1).toString(),
         sender: 'ai',
-        text: data.text || "I'm ready to answer any questions about Pakistani university admissions, aggregate cutoffs, or test dates.",
+        text: aiReplyText,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
 
@@ -122,7 +128,7 @@ export const CounselorView: React.FC<CounselorViewProps> = ({ setActiveTab }) =>
       const errorReply: ChatMessage = {
         id: (Date.now() + 1).toString(),
         sender: 'ai',
-        text: "Assalam-o-Alaikum! I had a temporary glitch fetching recommendations. Please re-send your request.",
+        text: "Assalam-o-Alaikum! I had a temporary glitch fetching recommendations. Please ensure your Gemini API key is configured correctly in Vercel environment variables and try again.",
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
       setMessages((prev) => [...prev, errorReply]);
