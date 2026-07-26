@@ -1,0 +1,6 @@
+{
+  "name": "UniGuide AI",
+  "description": "Pakistan's premier AI-powered university guidance platform, featuring smart admission predictors, university finder, merit calculators, and interactive AI counseling.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
