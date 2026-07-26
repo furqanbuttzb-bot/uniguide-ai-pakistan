@@ -32,11 +32,11 @@ https://uniguide-ai-pakistan.vercel.app/
  🔍 University Finder
 - Search HEC-recognized universities
 - Filter by:
-  - Province
-  - City
-  - Degree Level
-  - Degree Program
-  - University Type (Public/Private)
+- Province
+- City
+- Degree Level
+- Degree Program
+- University Type (Public/Private)
 
  🤖 AI Counselor
 - AI-powered admission assistant
